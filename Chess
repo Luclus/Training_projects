@@ -1,0 +1,375 @@
+def chess():
+    ##########
+
+    def king():  # Король
+        f_mvs_bsh = []
+        # Определение союзных фигур (объявление вражеских в данной логике не требуется)
+        fnd_fg = w_fg if fg in w_fg else b_fg
+
+        for y in range(y_s - 1, y_s + 2):
+            for x in range(x_s - 1, x_s + 2):
+                pos = [y, x]
+                try:
+                    if (-1 not in pos or 8 not in pos) and (desk[y][x] not in fnd_fg):
+                        f_mvs_bsh.append(pos)
+                except IndexError:
+                    pass
+
+        print(f"Король:{f_mvs_bsh}")
+        return f_mvs_bsh
+
+    def queen():  # Королева
+        f_mvs_bsh = []
+        f_mvs_bsh.extend(bishop())
+        f_mvs_bsh.extend(rook())
+        print("Королева:", f_mvs_bsh)
+        return f_mvs_bsh
+
+    def rook():  # Ладья
+        f_mvs_bsh = []
+
+        if fg in w_fg:  # Определение союзных и вражеских фигур
+            # Для белых
+            fnd_fg = w_fg
+            enm_fg = b_fg
+        else:
+            # Для чёрной ладьи
+            fnd_fg = b_fg
+            enm_fg = w_fg
+
+        for stp in range(1, y_s):  # Вверх от ладьи
+            pos = [y_s - stp, x_s]
+            d_p = desk[y_s - stp][x_s]
+            if d_p in fnd_fg:
+                break
+            else:
+                f_mvs_bsh.append(pos)
+                if d_p in enm_fg:
+                    break
+
+        for stp in range(1, 9 - y_s):  # Вниз от ладьи
+            pos = [y_s + stp, x_s]
+            if (y_s + stp) not in [0, 1, 2, 3, 4, 5, 6, 7]:
+                break
+            d_p = desk[y_s + stp][x_s]
+            if d_p in fnd_fg:
+                break
+            else:
+                f_mvs_bsh.append(pos)
+                if d_p in enm_fg:
+                    break
+
+        for stp in range(1, 9 - x_s):  # Вправо от ладьи
+            pos = [y_s, x_s + stp]
+            if (x_s + stp) not in [0, 1, 2, 3, 4, 5, 6, 7]:
+                break
+            d_p = desk[y_s][x_s + stp]
+            if d_p in fnd_fg:
+                break
+            else:
+                f_mvs_bsh.append(pos)
+                if d_p in enm_fg:
+                    break
+
+        for stp in range(1, x_s + 1):  # Влево от ладьи
+            pos = [y_s, x_s - stp]
+            d_p = desk[y_s][x_s - stp]
+            if d_p in fnd_fg:
+                break
+            else:
+                f_mvs_bsh.append(pos)
+                if d_p in enm_fg:
+                    break
+        # print("Ладья:", f_mvs_bsh)
+        return f_mvs_bsh
+
+    def bishop():  # Слон
+        f_mvs_bsh = []
+
+        if fg in w_fg:  # Определение союзных и вражеских фигур
+            # Для белых
+            fnd_fg = w_fg
+            enm_fg = b_fg
+        else:
+            # Для чёрных
+            fnd_fg = b_fg
+            enm_fg = w_fg
+
+        lmt = [0, 1, 2, 3, 4, 5, 6, 7]
+        # Цикл с ограничением в сторону вверх-вправо от слона
+        for stp in range(1, 8 - min([y_s, x_s])):
+            pos = [y_s - stp, x_s + stp]
+            if (y_s - stp) not in lmt or (x_s + stp) not in lmt:
+                break
+            d_p = desk[y_s - stp][x_s + stp]
+            if d_p in fnd_fg:
+                break
+            else:
+                f_mvs_bsh.append(pos)
+                if d_p in enm_fg:
+                    break
+
+        # Цикл с ограничением в сторону вниз-вправо от слона
+        y = y_s
+        x = x_s
+        try:
+            while True:
+                y += 1
+                x += 1
+                d_p = desk[y][x]
+                if d_p in fnd_fg:
+                    break
+                else:
+                    f_mvs_bsh.append([y, x])
+                    if d_p in enm_fg:
+                        break
+        except IndexError:
+            pass
+
+        # Цикл с ограничением в сторону вниз-влево от слона
+        for stp in range(1, 8 - min([y_s, x_s])):
+            pos = [y_s + stp, x_s - stp]
+
+            if (y_s + stp) not in lmt or (x_s - stp) not in lmt:
+                break
+            d_p = desk[y_s + stp][x_s - stp]
+            if d_p in fnd_fg:
+                break
+            else:
+                f_mvs_bsh.append(pos)
+                if d_p in enm_fg:
+                    break
+
+        # Цикл с ограничением в сторону вверх-влево от слона
+        y = y_s
+        x = x_s
+        try:
+            while -1 not in [y - 1, x - 1]:
+                y -= 1
+                x -= 1
+                d_p = desk[y][x]
+                if d_p in fnd_fg:
+                    break
+                else:
+                    f_mvs_bsh.append([y, x])
+                    if d_p in enm_fg:
+                        break
+        except IndexError:
+            pass
+
+        # print("Слон:", f_mvs_bsh)
+        return f_mvs_bsh
+
+    def knight():  # Рыцарь
+        f_mvs_knt = []
+        if fg == 2:  # Белый рыцарь (конь)
+            # Верхняя пара клеток
+            if 0 <= y_s - 2 <= 8:
+                try:
+                    if (0 <= x_s - 1 <= 8) and desk[y_s - 2][x_s - 1] not in w_fg:
+                        f_mvs_knt.append([y_s - 2, x_s - 1])
+                except IndexError:
+                    pass
+
+                try:
+                    if (0 <= x_s + 1 <= 8) and desk[y_s - 2][x_s + 1] not in w_fg:
+                        f_mvs_knt.append([y_s - 2, x_s + 1])
+                except IndexError:
+                    pass
+
+            # Правая пара клеток
+            if 0 <= x_s + 2 <= 8:
+                try:
+                    if (0 <= y_s + 1 <= 8) and desk[y_s + 1][x_s + 2] not in w_fg:
+                        f_mvs_knt.append([y_s + 1, x_s + 2])
+                except IndexError:
+                    pass
+                try:
+                    if (0 <= y_s - 1 <= 8) and desk[y_s - 1][x_s + 2] not in w_fg:
+                        f_mvs_knt.append([y_s - 1, x_s + 2])
+                except IndexError:
+                    pass
+
+            # Нижняя пара клеток
+            if 0 <= y_s + 2 <= 8:
+                try:
+                    if (0 <= x_s - 1 <= 8) and desk[y_s + 2][x_s - 1] not in w_fg:
+                        f_mvs_knt.append([y_s + 2, x_s - 1])
+                except IndexError:
+                    pass
+                try:
+                    if (0 <= x_s + 1 <= 8) and desk[y_s + 2][x_s + 1] not in w_fg:
+                        f_mvs_knt.append([y_s + 2, x_s + 1])
+                except IndexError:
+                    pass
+
+            # Левая пара клеток
+            if 0 <= x_s - 2 <= 8:
+                try:
+                    if (0 <= y_s + 1 <= 8) and desk[y_s + 1][x_s - 2] not in w_fg:
+                        f_mvs_knt.append([y_s + 1, x_s + 2])
+                except IndexError:
+                    pass
+                try:
+                    if (0 <= y_s - 1 <= 8) and desk[y_s - 1][x_s - 2] not in w_fg:
+                        f_mvs_knt.append([y_s - 1, x_s - 2])
+                except IndexError:
+                    pass
+
+
+
+            elif fg == 8:  # Чёрный рыцарь (конь)
+                # Верхняя пара клеток
+                if 0 <= y_s - 2 <= 8:
+                    try:
+                        if (0 <= x_s - 1 <= 8) and desk[y_s - 2][x_s - 1] not in b_fg:
+                            f_mvs_knt.append([y_s - 2, x_s - 1])
+                    except IndexError:
+                        pass
+                    try:
+                        if (0 <= x_s + 1 <= 8) and desk[y_s - 2][x_s + 1] not in b_fg:
+                            f_mvs_knt.append([y_s - 2, x_s + 1])
+                    except IndexError:
+                        pass
+
+                # Правая пара клеток
+                if 0 <= x_s + 2 <= 8:
+                    try:
+                        if (0 <= y_s + 1 <= 8) and desk[y_s + 1][x_s + 2] not in b_fg:
+                            f_mvs_knt.append([y_s + 1, x_s + 2])
+                    except IndexError:
+                        pass
+                    try:
+                        if (0 <= y_s - 1 <= 8) and desk[y_s - 1][x_s + 2] not in b_fg:
+                            f_mvs_knt.append([y_s - 1, x_s + 2])
+                    except IndexError:
+                        pass
+
+                # Нижняя пара клеток
+                if 0 <= y_s + 2 <= 8:
+                    try:
+                        if (0 <= x_s - 1 <= 8) and desk[y_s + 2][x_s - 1] not in b_fg:
+                            f_mvs_knt.append([y_s + 2, x_s - 1])
+                    except IndexError:
+                        pass
+                    try:
+                        if (0 <= x_s + 1 <= 8) and desk[y_s + 2][x_s + 1] not in b_fg:
+                            f_mvs_knt.append([y_s + 2, x_s + 1])
+                    except IndexError:
+                        pass
+
+                # Левая пара клеток
+                if 0 <= x_s - 2 <= 8:
+                    try:
+                        if (0 <= y_s + 1 <= 8) and desk[y_s + 1][x_s - 2] not in b_fg:
+                            f_mvs_knt.append([y_s + 1, x_s + 2])
+                    except IndexError:
+                        pass
+                    try:
+                        if (0 <= y_s - 1 <= 8) and desk[y_s - 1][x_s - 2] not in b_fg:
+                            f_mvs_knt.append([y_s - 1, x_s - 2])
+                    except IndexError:
+                        pass
+            print(f_mvs_knt)
+            return f_mvs_knt
+
+
+        else:
+            pass
+
+    def pawn():  # Пешка
+
+        # Что произойдёт, если пешка дойдёт до противоположного конца поля?
+
+        f_mvs = []
+        if fg == 1:  # Белая пешка
+            if 0 <= y_s - 1 <= 8:  # Не будет предлагать ходы за рамками доски
+                # Может пойти вперёд, если клетка не занята союзником
+                if desk[y_s - 1][x_s] not in w_fg:
+                    f_mvs.append([y_s - 1, x_s])
+                # Может пойти по диагонали влево, если клетка занята противником
+                if (0 <= x_s - 1 <= 8) and desk[y_s - 1][x_s - 1] in b_fg:
+                    f_mvs.append([y_s - 1, x_s - 1])
+                # Может пойти по диагонали вправо, если клетка занята противником
+                if (0 <= x_s + 1 <= 8) and desk[y_s - 1][x_s + 1] in b_fg:
+                    f_mvs.append([y_s - 1, x_s + 1])
+
+        # Чёрная пешка
+        elif fg == 7:
+            if desk[y_s + 1][x_s] not in b_fg:
+                f_mvs.append([y_s + 1, x_s])
+            if desk[y_s + 1][x_s - 1] in w_fg:
+                f_mvs.append([y_s + 1, x_s - 1])
+            if desk[y_s + 1][x_s + 1] in w_fg:
+                f_mvs.append([y_s + 1, x_s + 1])
+        print(f_mvs)
+        return f_mvs
+
+    ###########
+    w_fg = [1, 2, 3, 4, 5, 6]
+    b_fg = [7, 8, 9, 10, 11, 12]
+    move = "white"  # Какая сторона делает ход в этом раунде
+
+    desk = [[10, 8, 9, 12, 11, 9, 8, 10],
+            [7, 7, 7, 7, 7, 7, 7, 7],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [1, 1, 1, 1, 1, 1, 1, 1],
+            [4, 2, 3, 5, 6, 3, 2, 4]]
+
+    # Продолжать совершение ходов, пока на доске есть фигуры белой и чёрной стороны
+    while (len(set(sum(desk, [])) & set(w_fg)) > 0) and (len(set(sum(desk, [])) & set(b_fg)) > 0):
+        print(*desk, sep="\n")
+        print(f"Ход {'белых' if move == 'white' else 'чёрных'}")
+        ##########  Выбор исходной позиции
+
+        print("Выберите фигуру ([y, x])")
+        # Пользователь выбирает фигуру в графическом интерфейсе (в программу подаются её координаты)
+        y_s, x_s = int(input("y: ")), int(input("x: "))
+        while desk[y_s][x_s] == 0 \
+                or (move == "white" and desk[y_s][x_s] in b_fg) \
+                or (move == "black" and desk[y_s][x_s] in w_fg):  # Пользователь не может выбрать пустую клетку
+
+            print("Вы не можете выбрать пустую клетку"
+                  if desk[y_s][x_s] == 0 else
+                  "Вы не можете выбрать фигуру не своего цвета")
+            y_s, x_s = int(input()), int(input())  # Повторный выбор фигуры (а также подачи её координат)
+
+        ####### Идентификация фигуры и её правил движения, определение доступных ходов (генерация данных в free_moves)
+
+        fg = desk[y_s][x_s]
+        free_moves = pawn() if fg in [1, 7] \
+            else knight() if fg in [2, 8] \
+            else bishop() if fg in [3, 9] \
+            else rook() if fg in [4, 10] \
+            else queen() if fg in [5, 11] \
+            else king()
+
+        #######     Выбор конечной позиции
+
+        print("Выберите клетку, на которую ходите [y, x]")
+        y_e, x_e = int(input("y: ")), int(input("x: "))
+        # После выбора фигуры - выбор клетки для перемещения согласно правилам движения фигуры в графическом интерфейсе
+        # (подаются координаты клетки)
+        end_pos = [y_e, x_e]
+        while end_pos not in free_moves:  # Выбранная клетка хода должна удовлетворять правилам движения фигуры
+            print("Выбранная фигура не может так походить")
+            y_e, x_e = int(input("y: ")), int(input("x: "))
+            end_pos = [y_e, x_e]
+
+        #######
+
+        desk[y_s][x_s], desk[y_e][x_e] = desk[y_e][x_e], desk[y_s][x_s]
+        desk[y_s][x_s] = 0
+        print()
+
+        move = "black" if (move == "white") else "white"
+        ###########
+
+    print(f"Победили {'Белые' if (len(set(sum(desk, [])) & set(w_fg)) > 0) else 'Чёрные'}!")
+
+
+chess()
+
